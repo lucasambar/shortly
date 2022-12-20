@@ -44,6 +44,19 @@ export async function redirectUrl (req, res) {
         [url.views, short])
 
         res.redirect(url.userLink)
+        
+    } catch (erro) {
+        console.log(erro)
+        res.sendStatus(500)
+    }
+}
+
+export async function deleteUrl (req, res) {
+    const id = req.params.id
+
+    try {
+        await connectionDB.query('DELETE FROM urls WHERE id=$1',[id])
+        res.sendStatus(204)
     } catch (erro) {
         console.log(erro)
         res.sendStatus(500)
