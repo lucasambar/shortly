@@ -32,3 +32,24 @@ export async function validateUser (req, res, next) {
         res.sendStatus(500)
     }
 }
+
+export async function confirmPassword (req, res, next) {
+    const {email, password} = req.body
+    if (!email || !password) {res.status(422).send("Verifique se preencheu email e senha e tente novamente."); return}
+
+    try {
+        const existance = await connectionDB.query("SELECT * FROM users WHERE email=$1",[email])
+        if (existance.rowCount === 0) {res.status(401).send("Usuário não encontrado, tente novamente!"); return}
+        
+        const user = existance.rows[0]
+        const crypt = bcrypt.compareSync(password, user.password); 
+
+        if (!crypt) {res.status(401).send("Senha inválida, tente novamente!"); return}
+
+        req.userId = {userId:user.id}
+        next()
+    } catch (erro){
+      res.sendStatus(500)
+      console.log(erro)   
+    }
+}
