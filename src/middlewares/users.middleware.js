@@ -71,6 +71,7 @@ export async function validateToken (req, res, next) {
 
         req.user = user
         next()
+        
     } catch (erro) {
         console.log(erro)
         res.sendStatus(500)

@@ -3,6 +3,7 @@ import cors from "cors"
 import dotenv from "dotenv"
 
 import usersRoute from "./routes/users.route.js"
+import urlsRoute from "./routes/urls.route.js"
 
 dotenv.config()
 
@@ -11,6 +12,7 @@ app.use(cors())
 app.use(express.json())
 
 app.use(usersRoute)
+app.use(urlsRoute)
 
 const port =  process.env.PORT || 4000
 app.listen(port, () => console.log("Projeto rodando na porta " + port))
