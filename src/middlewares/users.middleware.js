@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 
 
 export async function validateUser (req, res, next) {
-    const user = req.body
+      const user = req.body
 
     const validation = userSchema.validate(user, {abortEarly:false})
     if (validation.error) {
@@ -51,5 +51,28 @@ export async function confirmPassword (req, res, next) {
     } catch (erro){
       res.sendStatus(500)
       console.log(erro)   
+    }
+}
+
+export async function validateToken (req, res, next) {
+    const { authorization } = req.headers;
+    const token = authorization?.replace('Bearer ', '');
+
+    if(!token) return res.sendStatus(401);
+
+    try {
+        const session = await connectionDB.query('SELECT * FROM sessions WHERE token=$1',[token])
+        if (session.rowCount == 0) return res.status(401).send("Sessão não encontrada.")
+        const userId = session.rows[0].userId
+
+        const userDB = await connectionDB.query('SELECT * FROM users WHERE id=$1',[userId])
+        if (userDB.rowCount == 0) return res.status(401).send("Usuário não encontrado")
+        const user = userDB.rows[0]
+
+        req.user = user
+        next()
+    } catch (erro) {
+        console.log(erro)
+        res.sendStatus(500)
     }
 }
