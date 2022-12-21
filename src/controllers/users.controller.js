@@ -27,3 +27,31 @@ export async function signin (req,res) {
         res.sendStatus(500)
     }
 }
+
+export async function getUsersUrl (req, res) {
+    const {id, name} = req.user
+    
+    try {
+        const {rows} = await connectionDB.query('SELECT SUM(views) AS "visitCount" FROM urls WHERE "userId"=$1',[id])
+        const visitCount = Number(rows[0].visitCount)
+
+        const urlsDB = await connectionDB.query
+            (`SELECT id, 
+            "newLink" AS "shortUrl",
+            "userLink" AS "url",
+            "views" AS "visitCount" 
+            FROM urls
+            WHERE "userId"=$1`,[id])
+        const shortenedUrls = urlsDB.rows
+        
+        const response = {
+            id, name, visitCount, shortenedUrls
+        }
+        res.send(response)
+    } catch (erro) {
+        console.log(erro)
+        res.sendStatus(500)
+    }
+
+
+}
