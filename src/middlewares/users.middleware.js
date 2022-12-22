@@ -1,6 +1,7 @@
 import { userSchema } from "../schemas/user.schema.js"
 import {connectionDB} from "../databases/db.js"
 import bcrypt from 'bcrypt';
+import { sessionByToken, userByEmail, userById } from "../repositories/users.repository.js";
 
 
 export async function validateUser (req, res, next) {
@@ -14,7 +15,7 @@ export async function validateUser (req, res, next) {
       }
 
     try {
-        const existance = await connectionDB.query("SELECT * FROM users WHERE email=$1", [user.email])
+        const existance = await userByEmail(user.email)
         if (existance.rowCount !== 0) {res.status(409).send("Email já cadastrado!"); return}
 
         const password = bcrypt.hashSync(user.password, 10);
@@ -38,7 +39,7 @@ export async function confirmPassword (req, res, next) {
     if (!email || !password) {res.status(422).send("Verifique se preencheu email e senha e tente novamente."); return}
 
     try {
-        const existance = await connectionDB.query("SELECT * FROM users WHERE email=$1",[email])
+        const existance = await userByEmail(email)
         if (existance.rowCount === 0) {res.status(401).send("Usuário não encontrado, tente novamente!"); return}
         
         const user = existance.rows[0]
@@ -61,11 +62,11 @@ export async function validateToken (req, res, next) {
     if(!token) return res.sendStatus(401);
 
     try {
-        const session = await connectionDB.query('SELECT * FROM sessions WHERE token=$1',[token])
+        const session = await sessionByToken(token)
         if (session.rowCount == 0) return res.status(401).send("Sessão não encontrada.")
         const userId = session.rows[0].userId
 
-        const userDB = await connectionDB.query('SELECT * FROM users WHERE id=$1',[userId])
+        const userDB = await userById(userId)
         if (userDB.rowCount == 0) return res.status(401).send("Usuário não encontrado")
         const user = userDB.rows[0]
 

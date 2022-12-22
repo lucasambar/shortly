@@ -1,6 +1,7 @@
 import { connectionDB } from "../databases/db.js"
 import { v4 as uuid } from 'uuid';
 import dayjs from "dayjs";
+import { insertSession, insertUser, sumViews, urlsByUserId } from "../repositories/users.repository.js";
 
 
 export async function signup (req, res) {
@@ -8,8 +9,7 @@ export async function signup (req, res) {
     const createdAt = dayjs()
 
     try {
-        await connectionDB.query('INSERT INTO users (name, email, password, "createdAt") VALUES ($1,$2,$3,$4);',
-        [name, email, password, createdAt])
+        await insertUser(name, email, password, createdAt)
         res.sendStatus(201)
     } catch (erro) {
         console.log(erro)
@@ -23,7 +23,7 @@ export async function signin (req,res) {
     const createdAt = dayjs()
 
     try {
-        await connectionDB.query('INSERT INTO sessions ("userId", token, "createdAt") VALUES ($1,$2,$3)', [userId, token, createdAt])
+        await insertSession(userId, token, createdAt)
         res.status(200).send({token: token})
     } catch (erro) {
         console.log(erro)
@@ -35,16 +35,10 @@ export async function getUsersUrl (req, res) {
     const {id, name} = req.user
     
     try {
-        const {rows} = await connectionDB.query('SELECT SUM(views) AS "visitCount" FROM urls WHERE "userId"=$1',[id])
+        const {rows} = await sumViews(id)
         const visitCount = Number(rows[0].visitCount)
 
-        const urlsDB = await connectionDB.query
-            (`SELECT id, 
-            "newLink" AS "shortUrl",
-            "userLink" AS "url",
-            "views" AS "visitCount" 
-            FROM urls
-            WHERE "userId"=$1`,[id])
+        const urlsDB = await urlsByUserId(id)
         const shortenedUrls = urlsDB.rows
         
         const response = {
