@@ -1,5 +1,6 @@
 import { nanoid } from "nanoid";
 import { connectionDB } from "../databases/db.js";
+import { urlById } from "../repositories/urls.repository.js";
 import { urlSchema } from "../schemas/urls.schema.js";
 
 export async function validateUrl (req, res, next) {
@@ -28,7 +29,7 @@ export async function validateDelete (req, res, next) {
     const urlId = req.params.id
 
     try {
-        const urlDB = await connectionDB.query('SELECT * FROM urls WHERE id=$1',[urlId])
+        const urlDB = await urlById(urlId)
         if (urlDB.rowCount === 0) return res.status(404).send("URL não existe")
         const url = urlDB.rows[0]
 
