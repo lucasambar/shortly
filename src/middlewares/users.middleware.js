@@ -47,7 +47,7 @@ export async function confirmPassword (req, res, next) {
 
         if (!crypt) {res.status(401).send("Senha inválida, tente novamente!"); return}
 
-        req.userId = {userId:user.id}
+        req.userId = {userId:user.id, name:user.name}
         next()
     } catch (erro){
       res.sendStatus(500)
