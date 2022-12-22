@@ -1,11 +1,13 @@
+import dayjs from "dayjs"
 import { connectionDB } from "../databases/db.js"
 
 export async function postShorten (req, res) {
     const {userId, usersLink, newLink} = req.url
+    const cratedAt = dayjs()
 
     try {
-        await connectionDB.query('INSERT INTO urls ("userId","userLink","newLink","views") VALUES ($1,$2,$3,1)',
-        [userId, usersLink, newLink])
+        await connectionDB.query('INSERT INTO urls ("userId","userLink","newLink","views","createdAt") VALUES ($1,$2,$3,0,$4)',
+        [userId, usersLink, newLink, cratedAt])
         res.status(201).send({shortUrl:newLink})
     } catch (erro) {
         console.log(erro)
@@ -43,7 +45,7 @@ export async function redirectUrl (req, res) {
         await connectionDB.query('UPDATE urls SET views=$1 WHERE "newLink"=$2',
         [url.views, short])
 
-        res.redirect(url.userLink)
+        res.status(200).redirect(url.userLink)
         
     } catch (erro) {
         console.log(erro)
