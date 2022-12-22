@@ -11,7 +11,7 @@ export function ranking () {
     FROM urls 
     JOIN users u ON u.id = urls."userId"
     GROUP BY u.name, urls."userId"
-    ORDER BY u.name DESC 
+    ORDER BY SUM(urls.views) DESC 
     LIMIT 10
     `)
 }
