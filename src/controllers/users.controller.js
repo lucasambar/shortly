@@ -18,13 +18,13 @@ export async function signup (req, res) {
 }
 
 export async function signin (req,res) {
-    const {userId} = req.userId
+    const {userId, name} = req.userId
     const token = uuid();
     const createdAt = dayjs()
 
     try {
         await insertSession(userId, token, createdAt)
-        res.status(200).send({token: token})
+        res.status(200).send({token: token, name: name})
     } catch (erro) {
         console.log(erro)
         res.sendStatus(500)
